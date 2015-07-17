@@ -1,49 +1,46 @@
 #!/usr/bin/env python3
 
-from od import ObjectDictionary, Index, Subindex
 from configparser import ConfigParser
 import re
+import os
+
+from od import ObjectDictionary, Index, Subindex
 
 
 def parse(file):
-        od = ObjectDictionary('SEATV32')
-        parser = ConfigParser()
-        parser.read(file)
+    name = os.path.splitext(os.path.basename(file))[0]
+    od = ObjectDictionary(name)
+    parser = ConfigParser()
+    parser.read(file)
 
-        device_info = parser['DeviceInfo']
-        baudrate = 'baudrate_'
-        od.baud_rates = [int(key[len(baudrate):]) for key in device_info if
-                           (key.startswith('baudrate_') and int(device_info[key]) is 1)]
-        print('Baud Rates: ' + ', '.join([str(b) for b in od.baud_rates]))
+    device_info = parser['DeviceInfo']
+    baud_rate = 'baudrate_'
+    od.baud_rates = [int(key[len(baud_rate):]) for key in device_info if
+                     (key.startswith('baudrate_') and int(
+                         device_info[key]) is 1)]
 
-        od.vendor_number = int(device_info['vendornumber'], 0)
-        print('Vendor Number: ' + hex(od.vendor_number))
+    od.vendor_number = int(device_info['vendornumber'], 0)
 
-        od.lss = bool(device_info.get('lss_supported', False))
+    od.lss = bool(device_info.get('lss_supported', False))
 
-        # od.indexes = []
-        for section in parser:
-            try:
-                index = Index(int(section, 16), parser[section]['parametername'])
-                pattern = section + 'sub(?P<sub>[0-9a-f]+)'
-                subindex_re = re.compile(pattern, re.IGNORECASE)
-                for s in parser:
-                    match = subindex_re.fullmatch(s)
-                    if match is not None:
-                        # TODO   actually fill this in
-                        subindex = Subindex(int(match.group('sub'), 16), parser[s]['parametername'])
-                        # si.
-                        index.add_subindex(subindex)
-                index.pdomapping = bool(parser[section].get('pdomapping', False))
-                # index.subindexes.sort()
-                od.add_index(index)
-            except ValueError as e:
-                if not str(e).startswith('invalid literal for int()'):
-                    raise
+    for section in parser:
+        try:
+            index = Index(int(section, 16), parser[section]['parametername'])
+            pattern = section + 'sub(?P<sub>[0-9a-f]+)'
+            subindex_re = re.compile(pattern, re.IGNORECASE)
+            for s in parser:
+                match = subindex_re.fullmatch(s)
+                if match is not None:
+                    subindex = Subindex(int(match.group('sub'), 16),
+                                        parser[s]['parametername'])
+                    index.add_subindex(subindex)
+            index.pdo_mapping = bool(parser[section].get('pdomapping', False))
+            od.add_index(index)
+        except ValueError as e:
+            if not str(e).startswith('invalid literal for int()'):
+                raise
 
-        # od.indexes.sort()
-
-        return od
+    return od
 
 
 if __name__ == '__main__':
