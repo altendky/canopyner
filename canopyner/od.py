@@ -209,6 +209,9 @@ class ObjectDictionaryModel(QAbstractItemModel):
             return self.root
         return index.internalPointer() if index.isValid() else self.root
 
+    def item_clicked(self, index):
+        print(self.node_from_index(index))
+
 
 if __name__ == '__main__':
     import sys

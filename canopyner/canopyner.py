@@ -35,6 +35,8 @@ class CANopyner(QMainWindow):
         self.tree.setModel(self.model)
         self.resize(500, 500)
 
+        self.tree.clicked.connect(self.model.item_clicked)
+
 
 if __name__ == '__main__':
     import sys
