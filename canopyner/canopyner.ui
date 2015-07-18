@@ -27,7 +27,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionImport_EDS"/>
+    <addaction name="actionImport_Object_Dictionary"/>
    </widget>
    <addaction name="menu_File"/>
   </widget>
@@ -63,9 +63,9 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionImport_EDS">
+  <action name="actionImport_Object_Dictionary">
    <property name="text">
-    <string>Import &amp;EDS</string>
+    <string>&amp;Import Object Dictionary...</string>
    </property>
   </action>
  </widget>
