@@ -96,7 +96,7 @@ class Index(TreeNode):
 
     def __str__(self):
         s = hex(self.index).lstrip('0x').zfill(4).upper()
-        s += ' ' + ('y' if self.pdomapping else 'n')
+        s += ' ' + ('y' if self.pdo_mapping else 'n')
         if len(self.name) > 0:
             s += ' <' + self.name + '>'
         if len(self) > 0:
