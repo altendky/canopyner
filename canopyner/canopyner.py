@@ -1,30 +1,18 @@
 #!/usr/bin/env python3
 
-from PyQt5.QtWidgets import (QHBoxLayout, QWidget, QTreeView, QMainWindow,
-                             QDockWidget, QLabel)
+from PyQt5.QtWidgets import QMainWindow
 
-from PyQt5.QtCore import Qt
 import eds
 import od
+from generated.canopyner_ui import Ui_MainWindow
 
 
 class CANopyner(QMainWindow):
     def __init__(self, file=None, parent=None):
         super(CANopyner, self).__init__(parent)
 
-        self.setDockOptions(
-            QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks)
-
-        self.tree = QTreeView()
-        self.od_dock = QDockWidget("OD", self)
-        self.od_dock.setWidget(self.tree)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.od_dock)
-
-        self.label = QLabel()
-        self.label.setAlignment(Qt.AlignCenter)
-        self.data_dock = QDockWidget("Data", self)
-        self.data_dock.setWidget(self.label)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.data_dock)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
         if file is not None:
             self.od = eds.parse(file)
@@ -37,13 +25,12 @@ class CANopyner(QMainWindow):
         else:
             self.model = TreeModel()
 
-        self.tree.setModel(self.model)
-        self.resize(500, 500)
+        self.ui.tree.setModel(self.model)
 
-        self.tree.clicked.connect(self.item_clicked)
+        self.ui.tree.clicked.connect(self.item_clicked)
 
     def item_clicked(self, index):
-        self.label.setText(str(index.model().node_from_index(index)))
+        self.ui.label.setText(str(index.model().node_from_index(index)))
 
 
 if __name__ == '__main__':
