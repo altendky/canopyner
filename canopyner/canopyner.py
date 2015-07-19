@@ -26,6 +26,7 @@ class CANopyner(QMainWindow):
 
     def item_clicked(self, index):
         self.ui.label.setText(str(index.model().node_from_index(index)))
+        index.model().sdo_read(index)
 
     def import_od(self, checked=False, file=None):
         print(file)

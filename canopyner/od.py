@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from PyQt5.QtCore import (Qt, QAbstractItemModel, QVariant, QModelIndex)
+import can
 
 
 def to_int(value):
@@ -131,6 +132,8 @@ class ObjectDictionaryModel(QAbstractItemModel):
         self.headers = ['Index', 'Name']
         self.columns = len(self.headers)
 
+        self.bus = can.interface.Bus(bustype='socketcan', channel='vcan0')
+
     def header_data(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headers[section])
@@ -208,6 +211,46 @@ class ObjectDictionaryModel(QAbstractItemModel):
         else:
             return self.root
         return index.internalPointer() if index.isValid() else self.root
+
+    def sdo_read(self, index):
+        node = self.node_from_index(index)
+
+        # TODO  0x42 is just a made up node id
+        self.bus.send(ReadSdo(node=0x42, index=node.index).to_message())
+
+
+class Sdo:
+    def __init__(self, node, header, index, subindex=0, value=0):
+        self.node = node
+        self.header = header
+        self.value = value
+        self.index = index
+        self.subindex = subindex
+
+    def to_bus(self):
+        data = [self.header]
+        data.extend(self.index.to_bytes(2, byteorder='little'))
+        data.extend(self.subindex.to_bytes(1, byteorder='little'))
+        data.extend(self.value.to_bytes(4, byteorder='little'))
+
+        return data
+
+    def to_message(self):
+        return can.Message(arbitration_id=0x580 + self.node, data=self.to_bus(),
+                           extended_id=False)
+
+
+class WriteSdo(Sdo):
+    def __init__(self, node, value, index, subindex=0):
+        super(WriteSdo, self).__init__(node=node, header=0x2B, index=index,
+                                       value=value, subindex=subindex)
+
+
+class ReadSdo(Sdo):
+    def __init__(self, node, index, subindex=0):
+        super(ReadSdo, self).__init__(node=node, header=0x40, index=index,
+                                      value=0,
+                                      subindex=subindex)
 
 
 if __name__ == '__main__':
