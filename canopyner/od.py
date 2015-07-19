@@ -77,10 +77,10 @@ class Index(TreeNode):
         self.index = to_int(index)
         # TODO   also store type
 
-        # self.subindexes = []#[Subindex() for i in range(0, subindexes)]
-
         # TODO   yep, do something more here
         self.value = 0
+
+        self.pdo_mapping = None
 
     def add_subindex(self, subindex):
         if isinstance(subindex, Subindex):
@@ -91,9 +91,6 @@ class Index(TreeNode):
 
     def index_str(self):
         return hex(self.index)
-
-    # def get(self, subindex=0):
-    #     return self.subindexes[subindex]
 
     def __str__(self):
         s = hex(self.index).lstrip('0x').zfill(4).upper()
@@ -210,7 +207,6 @@ class ObjectDictionaryModel(QAbstractItemModel):
             return index.internalPointer()
         else:
             return self.root
-        return index.internalPointer() if index.isValid() else self.root
 
     def sdo_read(self, index):
         node = self.node_from_index(index)
@@ -254,9 +250,9 @@ class ReadSdo(Sdo):
 
 
 if __name__ == '__main__':
+    import eds
     import sys
 
-    eds = Eds(sys.argv[1])
-    print(eds)
+    print(eds.parse(sys.argv[1]))
 
     sys.exit(0)

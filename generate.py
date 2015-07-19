@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 
+
 def find_files_by_type(path, extension):
     if not extension.startswith('.'):
         extension = '.' + extension
@@ -16,6 +17,7 @@ def find_files_by_type(path, extension):
 
     return matches
 
+
 def generate():
     for f in find_files_by_type('.', '.ui'):
         print('Processing: ' + f)
@@ -23,7 +25,8 @@ def generate():
         file_split = os.path.splitext(os.path.basename(f))
 
         if file_split[1] != '.ui':
-            print(os.path.basename(__file__) + ': Invalid extension for UI file: ' +
+            print(os.path.basename(__file__) +
+                  ': Invalid extension for UI file: ' +
                   file_split[1],
                   file=sys.stderr)
         else:
