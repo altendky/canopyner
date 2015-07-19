@@ -107,8 +107,10 @@ class Index(TreeNode):
 
 
 class ObjectDictionary(TreeNode):
-    def __init__(self, name, parent=None):
+    def __init__(self, name, node_id=None, parent=None):
         super(ObjectDictionary, self).__init__('', name, parent)
+
+        self.node_id = node_id
 
     def add_index(self, index):
         if isinstance(index, Index):
@@ -117,16 +119,18 @@ class ObjectDictionary(TreeNode):
         else:
             raise TypeError('Must be a Subindex')
 
+    def set_node_id(self, node_id):
+        self.node_id = node_id
+
     def __str__(self):
         return 'Indexes: \n' + '\n'.join([str(i) for i in self.children])
 
 
 class ObjectDictionaryModel(QAbstractItemModel):
-    def __init__(self, root, node_id=None, parent=None):
+    def __init__(self, root, parent=None):
         super(ObjectDictionaryModel, self).__init__(parent)
 
         self.root = root
-        self.node_id = node_id
         self.headers = ['Index', 'Name']
         self.columns = len(self.headers)
 
@@ -212,10 +216,8 @@ class ObjectDictionaryModel(QAbstractItemModel):
     def sdo_read(self, index):
         node = self.node_from_index(index)
 
-        self.bus.send(ReadSdo(node=self.node_id, index=node.index).to_message())
-
-    def set_node_id(self, node_id):
-        self.node_id = node_id
+        self.bus.send(
+            ReadSdo(node=self.root.node_id, index=node.index).to_message())
 
 
 class Sdo:

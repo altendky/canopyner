@@ -58,8 +58,8 @@ class CANopyner(QMainWindow):
 
             self.ui.tree.setModel(self.model)
 
-            self.ui.nodeid.valueChanged.connect(self.model.set_node_id)
-            self.model.set_node_id(self.ui.nodeid.value())
+            self.ui.nodeid.valueChanged.connect(self.od.set_node_id)
+            self.od.set_node_id(self.ui.nodeid.value())
 
 
 if __name__ == '__main__':
