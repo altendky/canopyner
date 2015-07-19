@@ -122,10 +122,11 @@ class ObjectDictionary(TreeNode):
 
 
 class ObjectDictionaryModel(QAbstractItemModel):
-    def __init__(self, root, parent=None):
+    def __init__(self, root, node_id=None, parent=None):
         super(ObjectDictionaryModel, self).__init__(parent)
 
         self.root = root
+        self.node_id = node_id
         self.headers = ['Index', 'Name']
         self.columns = len(self.headers)
 
@@ -211,8 +212,10 @@ class ObjectDictionaryModel(QAbstractItemModel):
     def sdo_read(self, index):
         node = self.node_from_index(index)
 
-        # TODO  0x42 is just a made up node id
-        self.bus.send(ReadSdo(node=0x42, index=node.index).to_message())
+        self.bus.send(ReadSdo(node=self.node_id, index=node.index).to_message())
+
+    def set_node_id(self, node_id):
+        self.node_id = node_id
 
 
 class Sdo:
