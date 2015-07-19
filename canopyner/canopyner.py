@@ -15,6 +15,7 @@ class CANopyner(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle(self.__class__.__name__)
 
         self.od = None
         self.model = None
