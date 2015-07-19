@@ -60,6 +60,13 @@ def generate():
             out_lambda=lambda f: os.path.splitext(f)[0] + '_ui.py',
             out_option='-o')
 
+    # TODO  depends on checkout of CanFestival repository
+    generic(extension='.od',
+            program=os.path.join('CanFestival-3', 'objdictgen',
+                                 'objdictgen.py'),
+            out_lambda=lambda f: os.path.splitext(f)[0] + '.c',
+            in_dir_exclude=['CanFestival-3'])
+
     return 0
 
 
