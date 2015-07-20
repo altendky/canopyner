@@ -26,8 +26,9 @@ class CANopyner(QMainWindow):
         self.ui.actionImport_Object_Dictionary.triggered.connect(self.import_od)
 
     def item_clicked(self, index):
-        self.ui.label.setText(str(index.model().node_from_index(index)))
-        index.model().sdo_read(index)
+        node = index.model().node_from_index(index)
+        self.ui.label.setText(str(node))
+        self.od.sdo_read(node)
 
     def import_od(self, checked=False, file=None):
         print(file)
@@ -60,6 +61,11 @@ class CANopyner(QMainWindow):
 
             self.ui.nodeid.valueChanged.connect(self.od.set_node_id)
             self.od.set_node_id(self.ui.nodeid.value())
+
+            self.od.send_msg.connect(self.send_msg)
+
+    def send_msg(self, msg):
+        self.bus.send(msg)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from PyQt5.QtCore import (Qt, QAbstractItemModel, QVariant, QModelIndex)
+
 import can
 
 
@@ -112,6 +113,8 @@ class ObjectDictionary(TreeNode):
 
         self.node_id = node_id
 
+        self.bus = can.interface.Bus(bustype='socketcan', channel='vcan0')
+
     def add_index(self, index):
         if isinstance(index, Index):
             # self.indexes.append(index)
@@ -121,6 +124,10 @@ class ObjectDictionary(TreeNode):
 
     def set_node_id(self, node_id):
         self.node_id = node_id
+
+    def sdo_read(self, node):
+        self.bus.send(
+            ReadSdo(node=self.node_id, index=node.index).to_message())
 
     def __str__(self):
         return 'Indexes: \n' + '\n'.join([str(i) for i in self.children])
@@ -133,8 +140,6 @@ class ObjectDictionaryModel(QAbstractItemModel):
         self.root = root
         self.headers = ['Index', 'Name']
         self.columns = len(self.headers)
-
-        self.bus = can.interface.Bus(bustype='socketcan', channel='vcan0')
 
     def header_data(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -212,12 +217,6 @@ class ObjectDictionaryModel(QAbstractItemModel):
             return index.internalPointer()
         else:
             return self.root
-
-    def sdo_read(self, index):
-        node = self.node_from_index(index)
-
-        self.bus.send(
-            ReadSdo(node=self.root.node_id, index=node.index).to_message())
 
 
 class Sdo:
