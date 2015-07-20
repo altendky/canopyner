@@ -62,8 +62,6 @@ class CANopyner(QMainWindow):
             self.ui.nodeid.valueChanged.connect(self.od.set_node_id)
             self.od.set_node_id(self.ui.nodeid.value())
 
-            self.od.send_msg.connect(self.send_msg)
-
     def send_msg(self, msg):
         self.bus.send(msg)
 
