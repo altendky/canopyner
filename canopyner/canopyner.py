@@ -20,7 +20,7 @@ class CANopyner(QMainWindow):
         self.od = None
         self.model = None
         if file is not None:
-            self.import_od(file)
+            self.import_od(file=file)
 
         self.ui.tree.clicked.connect(self.item_clicked)
         self.ui.actionImport_Object_Dictionary.triggered.connect(self.import_od)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    canopyner = CANopyner()
+    canopyner = CANopyner(file=sys.argv[1])
     canopyner.show()
 
     sys.exit(app.exec_())
