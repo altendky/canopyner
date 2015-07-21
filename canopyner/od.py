@@ -55,7 +55,8 @@ class TreeNode:
 
 class Subindex(TreeNode):
     def __init__(self, subindex, name, parent=None):
-        super(Subindex, self).__init__(str(subindex), name, parent)
+        index = parent.index if parent is not None else 0
+        super(Subindex, self).__init__(index, name, parent)
 
         # TODO   yep, do something more here
         self.value = 0
@@ -66,7 +67,7 @@ class Subindex(TreeNode):
             raise TypeError
 
     def index_str(self):
-        return self.index
+        return self.subindex
 
     def unique(self):
         # TODO  stop CAMPing, see 09824098098092045
@@ -90,11 +91,13 @@ class Index(TreeNode):
         self.value = 0
 
         self.pdo_mapping = None
+        self.subindex = 0
 
     def add_subindex(self, subindex):
         if isinstance(subindex, Subindex):
             # self.subindexes.append(subindex)
             self.append_child(subindex)
+            subindex.index = self.index
         else:
             raise TypeError('Must be a Subindex')
 
@@ -125,7 +128,7 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
     changed = pyqtSignal(TreeNode, int)
 
     def __init__(self, name, node_id=None, parent=None):
-        TreeNode.__init__(self, '', name, parent)
+        TreeNode.__init__(self, -1, name, parent)
         QObject.__init__(self)
 
         self.node_id = node_id
@@ -145,7 +148,8 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
 
     def sdo_read(self, node):
         self.bus.send(
-            ReadSdo(node=self.node_id, index=node.index).to_message())
+            ReadSdo(node=self.node_id, index=node.index,
+                    subindex=node.subindex).to_message())
 
     def on_message_received(self, msg):
         if self.node_id is None:
