@@ -167,13 +167,14 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
                                 if subindex == 0:
                                     i.value = value
                                     self.changed.emit(i, 2)
-                                    break
-                                else:
-                                    for s in i.children:
-                                        if s.subindex == subindex:
-                                            s.value = value
-                                            self.changed.emit(s, 2)
-                                            break
+
+                                for s in i.children:
+                                    if s.subindex == subindex:
+                                        s.value = value
+                                        self.changed.emit(s, 2)
+                                        break
+
+                                break
 
     def unique(self):
         # TODO  actually identify the object dictionary
