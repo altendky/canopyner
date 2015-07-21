@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from PyQt5.QtCore import (Qt, QAbstractItemModel, QVariant, QModelIndex)
+from PyQt5.QtCore import (Qt, QObject, QAbstractItemModel, QVariant,
+                          QModelIndex, pyqtSignal)
 
 import can
 
@@ -56,6 +57,9 @@ class Subindex(TreeNode):
     def __init__(self, subindex, name, parent=None):
         super(Subindex, self).__init__(str(subindex), name, parent)
 
+        # TODO   yep, do something more here
+        self.value = 0
+
         if isinstance(subindex, int):
             self.subindex = subindex
         else:
@@ -63,6 +67,10 @@ class Subindex(TreeNode):
 
     def index_str(self):
         return self.index
+
+    def unique(self):
+        # TODO  stop CAMPing, see 09824098098092045
+        return self.parent.unique() + ':' + str(self.subindex).zfill(3)
 
     def __str__(self):
         return str(self.subindex)
@@ -94,8 +102,10 @@ class Index(TreeNode):
         return hex(self.index)
 
     def __str__(self):
+        # TODO  stop CAMPing, see 09824098098092045
         s = hex(self.index).lstrip('0x').zfill(4).upper()
         s += ' ' + ('y' if self.pdo_mapping else 'n')
+        s += ' ' + '(' + str(self.value) + ')'
         if len(self.name) > 0:
             s += ' <' + self.name + '>'
         if len(self) > 0:
@@ -103,17 +113,25 @@ class Index(TreeNode):
 
         return s
 
+    def unique(self):
+        # TODO  stop CAMPing, see 09824098098092045
+        return hex(self.index).lstrip('0x').zfill(4).upper()
+
     def __lt__(self, other):
         return self.index < other.index
 
 
-class ObjectDictionary(TreeNode):
+class ObjectDictionary(TreeNode, can.Listener, QObject):
+    changed = pyqtSignal(TreeNode, int)
+
     def __init__(self, name, node_id=None, parent=None):
-        super(ObjectDictionary, self).__init__('', name, parent)
+        TreeNode.__init__(self, '', name, parent)
+        QObject.__init__(self)
 
         self.node_id = node_id
 
         self.bus = can.interface.Bus(bustype='socketcan', channel='vcan0')
+        self.notifier = can.Notifier(self.bus, [self])
 
     def add_index(self, index):
         if isinstance(index, Index):
@@ -129,6 +147,38 @@ class ObjectDictionary(TreeNode):
         self.bus.send(
             ReadSdo(node=self.node_id, index=node.index).to_message())
 
+    def on_message_received(self, msg):
+        if self.node_id is None:
+            return
+
+        # TODO  yuck and the whole do we save sub0 to the
+        #       index or subindex thing
+        if not msg.id_type:
+            if msg.arbitration_id == 0x600 + self.node_id:
+                if len(msg.data) == 8:
+                    if msg.data[0] == 0x43:
+                        index = int.from_bytes(msg.data[1:3],
+                                               byteorder='little')
+                        subindex = int(msg.data[3])
+                        value = int.from_bytes(msg.data[4:8],
+                                               byteorder='little')
+                        for i in self.children:
+                            if i.index == index:
+                                if subindex == 0:
+                                    i.value = value
+                                    self.changed.emit(i, 2)
+                                    break
+                                else:
+                                    for s in i.children:
+                                        if s.subindex == subindex:
+                                            s.value = value
+                                            self.changed.emit(s, 2)
+                                            break
+
+    def unique(self):
+        # TODO  actually identify the object dictionary
+        return '-'
+
     def __str__(self):
         return 'Indexes: \n' + '\n'.join([str(i) for i in self.children])
 
@@ -138,7 +188,7 @@ class ObjectDictionaryModel(QAbstractItemModel):
         super(ObjectDictionaryModel, self).__init__(parent)
 
         self.root = root
-        self.headers = ['Index', 'Name']
+        self.headers = ['Index', 'Name', 'Value']
         self.columns = len(self.headers)
 
     def header_data(self, section, orientation, role):
@@ -172,11 +222,18 @@ class ObjectDictionaryModel(QAbstractItemModel):
 
         node = self.node_from_index(index)
 
+        # TODO  enumerate columns?
         if index.column() == 0:
             return QVariant(node.index_str())
 
         elif index.column() == 1:
             return QVariant(node.name)
+
+        elif index.column() == 2:
+            return QVariant(node.value)
+
+        elif index.column() == 3:
+            return QVariant(node.unique())
 
         else:
             return QVariant()
@@ -217,6 +274,19 @@ class ObjectDictionaryModel(QAbstractItemModel):
             return index.internalPointer()
         else:
             return self.root
+
+    def index_from_node(self, node):
+        # TODO  make up another role for identification?
+        return self.match(self.index(0, 3, QModelIndex()),
+                          Qt.DisplayRole,
+                          node.unique(),
+                          1,
+                          Qt.MatchRecursive)
+
+    def changed(self, node, column):
+        index = self.index_from_node(node)[0]
+        index = self.index(index.row(), column, index.parent())
+        self.dataChanged.emit(index, index)
 
 
 class Sdo:
