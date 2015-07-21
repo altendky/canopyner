@@ -227,17 +227,16 @@ class ObjectDictionaryModel(QAbstractItemModel):
 
         node = self.node_from_index(index)
 
-        # TODO  enumerate columns?
-        if index.column() == 0:
+        if index.column() == self.headers.index('Index'):
             return QVariant(node.index_str())
 
-        elif index.column() == 1:
+        elif index.column() == self.headers.index('Name'):
             return QVariant(node.name)
 
-        elif index.column() == 2:
+        elif index.column() == self.headers.index('Value'):
             return QVariant(node.value)
 
-        elif index.column() == 3:
+        elif index.column() == len(self.headers):
             return QVariant(node.unique())
 
         else:
@@ -282,7 +281,7 @@ class ObjectDictionaryModel(QAbstractItemModel):
 
     def index_from_node(self, node):
         # TODO  make up another role for identification?
-        return self.match(self.index(0, 3, QModelIndex()),
+        return self.match(self.index(0, len(self.headers), QModelIndex()),
                           Qt.DisplayRole,
                           node.unique(),
                           1,
