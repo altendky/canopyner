@@ -158,7 +158,7 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
         # TODO  yuck and the whole do we save sub0 to the
         #       index or subindex thing
         if not msg.id_type:
-            if msg.arbitration_id == 0x600 + self.node_id:
+            if msg.arbitration_id == 0x580 + self.node_id:
                 if len(msg.data) == 8:
                     if msg.data[0] == 0x43:
                         index = int.from_bytes(msg.data[1:3],
@@ -310,7 +310,7 @@ class Sdo:
         return data
 
     def to_message(self):
-        return can.Message(arbitration_id=0x580 + self.node, data=self.to_bus(),
+        return can.Message(arbitration_id=0x600 + self.node, data=self.to_bus(),
                            extended_id=False)
 
 
