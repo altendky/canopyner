@@ -160,7 +160,7 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
         if not msg.id_type:
             if msg.arbitration_id == 0x580 + self.node_id:
                 if len(msg.data) == 8:
-                    if msg.data[0] == 0x43:
+                    if msg.data[0] == 0x43 or msg.data[0] == 0x4f:
                         index = int.from_bytes(msg.data[1:3],
                                                byteorder='little')
                         subindex = int(msg.data[3])
