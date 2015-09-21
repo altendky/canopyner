@@ -4,6 +4,7 @@ from PyQt5.QtCore import (Qt, QObject, QAbstractItemModel, QVariant,
                           QModelIndex, pyqtSignal)
 
 import can
+import platform
 
 
 def to_int(value):
@@ -133,7 +134,13 @@ class ObjectDictionary(TreeNode, can.Listener, QObject):
 
         self.node_id = node_id
 
-        self.bus = can.interface.Bus(bustype='socketcan', channel='vcan0')
+        default = {
+            'Linux': {'bustype': 'socketcan', 'channel': 'vcan0'},
+            'Windows': {'bustype': 'pcan', 'channel': 'PCAN_USBBUS1'}
+        }[platform.system()]
+
+        self.bus = can.interface.Bus(**default)
+
         self.notifier = can.Notifier(self.bus, [self])
 
     def add_index(self, index):
