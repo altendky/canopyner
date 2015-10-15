@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
+import argparse
 import eds
 import od
 from generated.canopyner_ui import Ui_MainWindow
@@ -71,7 +72,11 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    canopyner = CANopyner(file=sys.argv[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', '-f', default=None)
+    args = parser.parse_args()
+
+    canopyner = CANopyner(file=args.file)
     canopyner.show()
 
     sys.exit(app.exec_())
