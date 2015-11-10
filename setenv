@@ -1,0 +1,8 @@
+set -e
+set -vx
+
+export PY=python3.4
+
+export GITROOT="$(pwd)"
+export BUILDROOT="${GITROOT}-build"
+export SYSROOT="${BUILDROOT}/sysroot"

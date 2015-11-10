@@ -5,9 +5,9 @@ from collections import OrderedDict
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 
 import argparse
-import eds
-import od
-from generated.canopyner_ui import Ui_MainWindow
+from . import eds
+from . import od
+from .generated.canopyner_ui import Ui_MainWindow
 
 
 class CANopyner(QMainWindow):
@@ -65,7 +65,7 @@ class CANopyner(QMainWindow):
             self.od.changed.connect(self.model.changed)
 
 
-if __name__ == '__main__':
+def main():
     import sys
 
     from PyQt5.QtWidgets import QApplication
@@ -79,4 +79,8 @@ if __name__ == '__main__':
     canopyner = CANopyner(file=args.file)
     canopyner.show()
 
-    sys.exit(app.exec_())
+    return app.exec_()
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(main())

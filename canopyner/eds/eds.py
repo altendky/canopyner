@@ -4,7 +4,7 @@ from configparser import ConfigParser
 import re
 import os
 
-from od import ObjectDictionary, Index, Subindex
+from canopyner.od import ObjectDictionary, Index, Subindex
 
 
 def parse(file):

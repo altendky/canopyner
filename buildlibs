@@ -1,0 +1,70 @@
+set -e
+set -vx
+
+source setenv
+#export PY=python3.4
+
+#export GITROOT="$(pwd)"
+#export GITROOT="$(pwd)/canopyner"
+#git clone https://canopyner.phoreplay.com/diffusion/C/canopyner.git "${GITROOT}"
+
+#export BUILDROOT="${GITROOT}-build"
+mkdir ${BUILDROOT}
+cd ${BUILDROOT}
+mkdir sysroot-linux-x64
+ln -s sysroot-linux-x64 sysroot
+#export SYSROOT="$(pwd)/sysroot"
+mkdir "${SYSROOT}/src"
+
+wget --directory-prefix="${BUILDROOT}" https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tar.xz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/Python-3.4.3.tar.xz"
+cd Python-3.4.3
+pyqtdeploycli --package python --target linux-64 configure
+qmake SYSROOT=$SYSROOT
+make
+make install
+
+wget --directory-prefix="${BUILDROOT}" http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.tar.gz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/sip-4.17.tar.gz"
+cd sip-4.17
+pyqtdeploycli --package sip --target linux-64 configure
+${PY} configure.py --static --sysroot="${SYSROOT}" --no-tools --use-qmake --configuration=sip-linux.cfg
+# TODO   use our to-be-built qmake?
+qmake
+make
+make install
+
+wget --directory-prefix="${BUILDROOT}" https://www.openssl.org/source/openssl-1.0.2d.tar.gz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/openssl-1.0.2d.tar.gz"
+cd openssl-1.0.2d
+./config --prefix="${SYSROOT}"
+make
+make test
+make install
+
+wget --directory-prefix="${BUILDROOT}" http://download.qt.io/official_releases/qt/5.5/5.5.1/single/qt-everywhere-opensource-src-5.5.1.tar.gz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/qt-everywhere-opensource-src-5.5.1.tar.gz"
+cd qt-everywhere-opensource-src-5.5.1
+./configure -prefix "${SYSROOT}/qt-5.5.1" -static -release -nomake examples -qt-xcb -openssl-linked -v -I $SYSROOT/include -L $SYSROOT/lib -confirm-license -opensource
+make
+make install
+
+wget --directory-prefix="${BUILDROOT}" http://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.5.1/PyQt-gpl-5.5.1.tar.gz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/PyQt-gpl-5.5.1.tar.gz"
+cd PyQt-gpl-5.5.1
+pyqtdeploycli --package pyqt5 --target linux-64 configure
+${PY} configure.py --static --sysroot="${SYSROOT}" --disable=enginio --no-tools --no-qsci-api --no-designer-plugin --no-qml-plugin --configuration=pyqt5-linux.cfg --qmake="${SYSROOT}/qt-5.5.1/bin/qmake" --confirm-license
+make
+make install
+
+wget --directory-prefix="${BUILDROOT}" https://pypi.python.org/packages/source/p/python-can/python-can-1.4.1.tar.gz
+cd "${SYSROOT}/src"
+tar -xvf "${BUILDROOT}/python-can-1.4.1.tar.gz"
+# TODO is there something to build?  i think not...
+#cd python-can-1.4.1
+#pyqtdeploycli --package python-can --target linux-64 configure

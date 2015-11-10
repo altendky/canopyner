@@ -1,0 +1,15 @@
+set -e
+set -vx
+
+source setenv
+
+./generate.py
+
+cd ${BUILDROOT}
+rm -rf build
+pyqtdeploycli --project ${GITROOT}/canopyner.pdy build
+cd build
+sed -i 's/LIBS += -l(ssl|crypto)/LIBS += -lssl -lcrypto/' canopyner.pro
+"${SYSROOT}/qt-5.5.1/bin/qmake"
+make
+./canopyner
